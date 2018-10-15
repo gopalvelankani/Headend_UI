@@ -38,6 +38,7 @@ class ControllerCommonHeader extends Controller {
 			$data['mxl'] = $this->url->link('common/mxl', 'token=' . $this->session->data['token'], 'SSL');
 			$data['ipout'] = $this->url->link('common/ipout', 'token=' . $this->session->data['token'], 'SSL');
 			$data['channelout'] = $this->url->link('common/channelout', 'token=' . $this->session->data['token'], 'SSL');
+			$data['PSI'] = $this->url->link('common/PSI', 'token=' . $this->session->data['token'], 'SSL');
           
 		}
 

@@ -8,7 +8,7 @@ class Session {
 			ini_set('session.use_cookies', 'On');
 			ini_set('session.use_trans_sid', 'Off');
 			ini_set('session.cookie_httponly', 'On');
-
+            ini_set('session.gc_maxlifetime', '1800');
 			if (isset($_COOKIE[session_name()]) && !preg_match('/^[a-zA-Z0-9,\-]{22,40}$/', $_COOKIE[session_name()])) {
 				exit();
 			}

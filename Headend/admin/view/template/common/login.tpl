@@ -31,15 +31,15 @@
                 <div class="input-group"><span class="input-group-addon"><i class="fa fa-lock"></i></span>
                   <input type="password" name="password" value="<?php echo $password;?>" placeholder="<?php echo $entry_password; ?>" id="input-password" class="form-control"/>
                 </div>
-                <?php if ($forgotten) { ?>
+               <!--  <?php if ($forgotten) { ?>
                 <span class="help-block"><a href="<?php echo $forgotten; ?>"><?php echo $text_forgotten; ?></a></span>
-                <?php } ?>
+                <?php } ?> -->
               </div>
               <div class="text-right">
                 <button id="login_button" type="submit" class="btn btn-primary"><i class="fa fa-key"></i> <?php echo $button_login; ?></button>
               </div>
               <?php if ($redirect) { ?>
-              <input type="hidden" name="redirect" value="<?php echo $redirect; ?>" />
+              <input type="hidden" name="redirect" value="<?php echo $redirect;?>" />
               <?php } ?>
             </form>
           </div>

@@ -23,6 +23,7 @@
 <link href="<?php echo $link['href']; ?>" rel="<?php echo $link['rel']; ?>" />
 <?php } ?>
  <link rel="stylesheet" type="text/css" href="view/javascript/bootstrap/css/bootstrap1.min.css">
+
 <script type="text/javascript" src="view/javascript/jquery/jquery-2.1.1.min.js"></script>
 <script type="text/javascript" src="view/javascript/bootstrap/js/bootstrap.min.js"></script>
 <script type="text/javascript" src="view/javascript/summernote/summernote.js"></script>
@@ -31,6 +32,9 @@
 <script src="view/javascript/common.js" type="text/javascript"></script>
 <script src="view/javascript/headend.js" type="text/javascript"></script>
 <script src="view/javascript/date.js" type="text/javascript"></script>
+<script src="view/javascript/ip.js"></script>
+<script src="view/javascript/jquery.validate.min.js" type="text/javascript"></script>
+
 <?php foreach ($scripts as $script) { ?>
 <script type="text/javascript" src="<?php echo $script; ?>"></script>
 <?php } ?>
@@ -44,9 +48,9 @@
     /*color:orange;*/
     box-shadow:0 0 0 1px orange;
   }
-  .afterclick{background-color: orange }
-  .hover1{background-color: lightblue }
-  .hover2{background-color: lightgreen} 
+  .afterclick{background-color: orange!important }
+  .hover1{background-color: lightblue!important }
+  .hover2{background-color: lightgreen!important} 
   .blank_row{ background-color: #f2f2f2; }
   .panel{ cursor: pointer; background-color:black; width:100%;}
   .panel1{ cursor: pointer;
@@ -54,13 +58,15 @@
    }   
   .panel2{ cursor: pointer; 
   background-color:#f2f2f2; width: 100%; min-height: 4vh; border: 1px solid Gainsboro; white-space:nowrap; table-layout:fixed;}
-  .col-md-4{ height: 85vh; overflow: scroll; }
+  .col-md-6{ height: 40vh; overflow-y: scroll; background-color: Gainsboro; }
+
   .container-fluid{ background-color:Gainsboro;} 
   .panel-body{ background-color: white; } 
   .search-query{ float: right; }
   .channels{ color:black; } 
   .modal-content{ background-color: #f2f2f2; }
-  #content-areas{ background-color: silver; }   
+  #content-areas{ background-color: silver }  
+   #output-collapse{ background-color: silver; }
   .Rmx_ip{ color: white; } 
   .panelSetting{color:white;} 
   .collapse-panel{width: 100%; min-height: 3vh;}
@@ -71,58 +77,107 @@
   .ch-name{ white-space:nowrap; text-overflow:ellipsis; overflow:hidden;}
   .ch-number{ margin-left:10%;}
   .panel-ecmg{width: 100%;}
+  #tabs{margin-top: 1%;}
+   #loading-img {
+                background: url("view/image/loading.gif") center center no-repeat;
+                display: none;
+                height: 176px;
+                width: 308px;
+                position: absolute;
+                top: 33%;
+                left: 1%;
+                right: 1%;
+                margin: auto;
+            }
+
+
+            
+            .button{
+                padding: 10px 25px;
+            }
+
+            .stream{
+                font-size: 15px;
+                padding-left: 40px;
+                padding-right: 60px;
+            }
+            .ip{
+                width:150px;
+                
+            }
+            .port{
+                width:100px;
+                
+            }
+            .overlay {
+                background: #e9e9e9;  
+                display: none;        
+                position: absolute;  
+                top: 0;                  
+                right: 0;               
+                bottom: 0;
+                left: 0;
+                opacity: 0.5;
+            }
+            .modalText{
+
+                background-color: #004466; 
+                color: white; 
+                min-height: 30px; 
+                text-align: center;
+                padding-top: 5px; 
+                min-width: 20px;
+            }
+            .td{
+                padding:0 0px 0 5px; padding-top: 10px;
+            }
+            .pad{
+                margin-top: 1.9px;
+            }
+            .modal.modal-wide .modal-dialog {
+              width: 90%;
+            }
+            .modal-wide .modal-body {
+              overflow-y: auto;
+            }
+            .blank_row{
+              background-color: white;
+            }
+
+#changeServiceType {
+    min-height:10%; 
+    overflow-y :auto; 
+    overflow-x:hidden; 
+ 
+    width:70%;
+    display: contents;
+ }
 </style>
-<script type="text/javascript">
- $('#pass, #pass_repeat').keyup(function() {
-      var empty = false;
-      $('#pass, #pass_repeat').each(function() 
-      {
-        if ($(this).val() == '') 
-         {
-           empty = true;
-          }
-      });
-      if (empty) 
-        {
-         $('#save_admin').attr('disabled', 'disabled'); 
-        } else { 
-      if(check_repeat_pass() )
-        {
-         $('#save_admin').removeAttr('disabled'); 
-        }
-      else
-        {
-         $('#save_admin').attr('disabled', 'disabled');
-        }
-      }
-  });
-function check_repeat_pass()
-{
-   org_password = $("#pass").val();
-   repeat_password = $("#pass_repeat").val();
-   $("#error_repeat_pass").hide();
-   if(repeat_password!=org_password)
-   {
-     $("#error_repeat_pass").html("It should match with above ");
-     $("#error_repeat_pass").show();
-    return false;
-   }
-   else{
-    return true;
-   }
+
+<!-- <script type="text/javascript">
+  function pingServer() {
+$.ajax({ url:  });
 }
-</script>
+$(document).ready(function() {
+setInterval('pingServer()', 2000);
+});
+</script> -->
 </head>
 <body>
 <div id="container">
-<header class="page-header" style="color:white;margin-top: 0%">
+<header class="page-header" style="color:white;margin-top: 0%;margin-bottom: 0%">
       <div>
     <a href="<?php echo $home; ?>" class="navbar-brand"><img src="view/image/vepl_logo3.png" style="margin-top: -9%" alt="<?php echo $heading_title; ?>" title="<?php echo $heading_title; ?>" /></a></div>
+ 
     <?php if ($logged) { ?>
-   <a  id="mapping" href="<?php echo $home;?>" style="color: white;margin-left:25%;">MAPPING</a>
-    <a  id="selection" href="<?php echo $selection;?>" style="color: white;margin-left: 2%;">SELECTION</a>
-    <a class="nav-link" id="output" href="<?php echo $output;?>" style="color: white;margin-left: 2%;">OUTPUTS</a>
+   <a class="nav-link" id="output" href="<?php echo $output;?>" style="color: white;margin-left: 25%;">STATUS</a>
+   <a id="selection" href="<?php echo $selection;?>" style="color: white;margin-left: 2%;">INPUT</a>
+   <a id="mapping" href="<?php echo $home;?>" style="color: white;margin-left:2%;">MAPPING</a>
+   <a id="PSI" href="<?php echo $PSI;?>" style="color: white;margin-left:2%;" ">PSI/SI TABLES</a>
+   
+    
 
+  
      <a class="glyphicon glyphicon-user" data-toggle="modal" data-target="#admin" style="color: white; margin-left: 20%;" >
       Admin </a> 
       
@@ -163,7 +218,7 @@ function check_repeat_pass()
                 </tr>
               </table>
               <div  class="modal-footer" style="margin-top: 20px;">
-                <button type="button" class="btn btn-default" onclick="admin()" id="save_admin" disabled="disabled">APPLY & SAVE</button>
+                <button type="button" class="btn btn-default" onclick="changePass()" id="save_admin" disabled="disabled" data-dismiss="modal">APPLY & SAVE</button>
                 <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
               </div>
             </div>
@@ -171,6 +226,47 @@ function check_repeat_pass()
         </div>
       </div>  
       <?php } ?>    
+<script type="text/javascript">
 
+ $('#pass, #pass_repeat').keyup(function() {
+      var empty = false;
+      $('#pass, #pass_repeat').each(function() 
+      {
+        if ($(this).val() == '') 
+         {
+           empty = true;
+          }
+      });
+      if (empty) 
+        {
+         $('#save_admin').attr('disabled', 'disabled'); 
+        } else { 
+      if(check_repeat_pass() )
+        {
+         $('#save_admin').removeAttr('disabled'); 
+        }
+      else
+        {
+         $('#save_admin').attr('disabled', 'disabled');
+        }
+      }
+  });
+function check_repeat_pass()
+{
+   org_password = $("#pass").val();
+   repeat_password = $("#pass_repeat").val();
+   $("#error_repeat_pass").hide();
+   if(repeat_password!=org_password)
+   {
+     $("#error_repeat_pass").html("It should match with above ");
+     $("#error_repeat_pass").show();
+    return false;
+   }
+   else{
+    return true;
+   }
+}
+
+</script>
 
 </header>

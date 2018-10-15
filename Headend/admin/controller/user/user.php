@@ -509,5 +509,6 @@ class ControllerUserUser extends Controller {
           
 		$this->load->model('user/user');
 		$this->model_user_user->editPassword($id,$password);
+		
 	}
 }

@@ -1,0 +1,60 @@
+/*
+function input_status_INPUT(b)
+{ 
+<?php $RE_NO=0; foreach($Selection_detail as $Selection_value) { ?>
+  <?php    foreach($ip_input[$Selection_value['Selection_Id']-1] as $RE_value ){ ?>
+   $('#channel_<?php echo $RE_NO;?>').removeClass("hover2");
+  <?php  foreach($RE_value['channels'] as $value1 ){ ?>
+     if(b == <?php echo $value1['channelnumber'];?>)
+     { 
+        if($('#sel_<?php echo $Selection_value['Selection_Id']?>').attr('aria-expanded')=="true")
+        {
+           if($('#channel_<?php echo $RE_NO;?>').attr('aria-expanded')=="true")
+           {
+
+           }
+           else
+           {
+             $('#channel_<?php echo $RE_NO;?>').addClass("hover2"); 
+             $('#channel_<?php echo $RE_NO;?>').click();
+           } 
+           $('#channel_<?php echo $RE_NO;?>').addClass("hover2");
+        }
+        else 
+        {
+           $("#sel_<?php echo $Selection_value['Selection_Id']?>").click();
+           if($('#channel_<?php echo $RE_NO;?>').attr('aria-expanded')=="true")
+           {
+
+           }
+           else
+           {
+             $('#channel_<?php echo $RE_NO;?>').addClass("hover2"); 
+             $('#channel_<?php echo $RE_NO;?>').click();
+           }
+           $('#channel_<?php echo $RE_NO;?>').addClass("hover2");
+        }
+     }
+    <?php  } ?>
+    <?php $RE_NO++;  } ?>
+    <?php  } ?>                  
+}*/
+/*function input_status_OUTPUT(a)
+{
+    <?php foreach($QamFreq_detail as $QamFreq_value ){ ?>
+      $('#freq_out_<?php echo $QamFreq_value['freq_ID'].'_'.$QamFreq_value['qam_id']?>').removeClass("hover2");   
+      $('#channel11<?php echo $QamFreq_value['freq_ID'].'_'.$QamFreq_value['qam_id']?>').find('table').each(function() {
+          var channel_id=($(this).attr('id')).substr(6);
+                if(a == channel_id)
+                {
+                  if($('#qam_name<?php echo $QamFreq_value['qam_id'];?>').attr('aria-expanded')!="true"){
+                    $('#qam_name<?php echo $QamFreq_value['qam_id'];?>').click();
+                  }
+                  if($('#channel11<?php echo $QamFreq_value['freq_ID'].'_'.$QamFreq_value['qam_id']?>').attr('aria-expanded')!="true"){
+                    $('#freq_out_<?php echo $QamFreq_value['freq_ID'].'_'.$QamFreq_value['qam_id']?>').click();
+                  }
+                  $('#freq_out_<?php echo $QamFreq_value['freq_ID'].'_'.$QamFreq_value['qam_id']?>').addClass("hover2"); 
+                } 
+        }); 
+    <?php } ?>
+}*/

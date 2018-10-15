@@ -7,16 +7,11 @@ class ControllerCommonOutput extends Controller {
 
 		$data['heading_title'] = $this->language->get('heading_title');
 
-		$data['text_sale'] = $this->language->get('text_sale');
-		$data['text_map'] = $this->language->get('text_map');
-		$data['text_activity'] = $this->language->get('text_activity');
-		$data['text_recent'] = $this->language->get('text_recent');
+		
 		$this->load->model('common/dashboardchannels');
-		$data['status']= $this->model_common_dashboardchannels->getStatus(); //to get the ECMG channel data from local database
-		// var_dump($ecmg_channel_data);
+		$data['status']= $this->model_common_dashboardchannels->getStatus(); 
 
-		// $data['RMX_ip'] = RMX_IP;
-		// $this->addECMStream();
+		//**********************MXL OUT*************************//
 		$data['mxldata']=array();
 		$i=0;
 		$mxls= $this->model_common_dashboardchannels->getMxlData();
@@ -33,14 +28,14 @@ class ControllerCommonOutput extends Controller {
 		    	
 				$this->response->setOutput(-1);
 			}else{
-				// $this->response->setOutput($set_demod_resp);
+				
 				$data['mxldata'][$i]=array('tunerId'=>$mxl['tunerId'],'mxl_id'=>$mxl['mxl_id'],'rmx_id'=>$mxl['rmx_id'],'frequency'=>$mxl['frequency'],'rate'=>$mxl['rate'],'demodId'=>$mxl['demodId'],'signalstrength'=>$set_demod_decoded['snr'],'locked'=>$set_demod_decoded['locked']);
 				$i++;
 				
 			}
 
 		}
-
+//**********************IP OUT*************************//
 		$data['ipoutdata']=array();
 		$i=0;
 		$ips= $this->model_common_dashboardchannels->getIpStream();
@@ -51,47 +46,103 @@ class ControllerCommonOutput extends Controller {
 				$i++;
 
 		}
+//**********************IP IN*************************//
+        $data['ipindata']=array();
+		$i=0;
+		$ipIn= $this->model_common_dashboardchannels->getIpInputData();
 
+		foreach($ipIn as $IP){ 
+			
+				$data['ipindata'][$i]=array('ip_address'=>$IP['ip'],'port'=>$IP['port'],'channel'=>$IP['channel'],'rmx_no'=>$IP['rmx_no']);
+				$i++;
+
+		}
+      
+
+//**********************INPUT CHANNELS*************************//
+		$input_channel_bitrate = array();
+        $data_tunedTuner= $this->model_common_dashboardchannels->getTunedTuners();
+       
+	       $data['inputChannels_data']=array();
+	       $j=0;
+        foreach ($data_tunedTuner as $data_tuner ) 
+	       {
+	            $url_get_inputbitrate = "http://".RMX_IP."/getDataflowRates";      
+			 	$hdr = array('Content-Type: application/x-www-form-urlencoded');
+			 	$data_get_inputbitrate="rmx_no=".$data_tuner['rmx_no']."&input=".$data_tuner['input']."&output=".$data_tuner['input'];
+			 	$restapi_object = new restapi();
+			 	$get_inputbitrate_resp =$restapi_object->callAPI("POST",$hdr,$url_get_inputbitrate,$data_get_inputbitrate);
+			 	$get_inputbitrate_decoded = json_decode($get_inputbitrate_resp,true); 
+
+			 	if($get_inputbitrate_resp == false || $get_inputbitrate_decoded['error'] == true){
+			    	
+					
+				}	
+				else
+				{
+				    $url_get_ProgList = "http://".RMX_IP."/getServiceList";      
+				 	$hdr = array('Content-Type: application/x-www-form-urlencoded');
+				 	$data_get_ProgList="rmx_no=".$data_tuner['rmx_no']."&input=".$data_tuner['input']."&output=".$data_tuner['input'];
+				 	$restapi_object = new restapi();
+				 	$get_ProgList_resp =$restapi_object->callAPI("POST",$hdr,$url_get_ProgList,$data_get_ProgList);
+				 	$get_ProgList_decoded = json_decode($get_ProgList_resp,true);
+					
+				    if($get_ProgList_resp == false || $get_ProgList_decoded['error'] == true){
+				    	
+						
+					}
+					else if($get_ProgList_decoded['progNums'])
+					{   
+						$data_channel= $this->model_common_dashboardchannels->getInputChannels($data_tuner['rmx_no'],$data_tuner['input']);
+						
+		                $i=0;
+						foreach($data_channel as $channel_data)
+						{
+                         $pos=  array_search($channel_data['channelnumber'], $get_ProgList_decoded['progNums']);
+                         if(is_numeric($pos))
+                         {
+                         	
+                         $bitrate=($get_inputbitrate_decoded['uInuputRate']/1000) *$get_ProgList_decoded['uband'][$pos];
+                         }
+                         else
+                         {
+                          $bitrate=0;	
+                         }
+                         $data['inputChannels_data'][$j]=array('channelnumber'=>$channel_data['channelnumber'],'channelname'=>$channel_data['channelname'],'input'=>$channel_data['input'],'rmx_no'=>$channel_data['rmx_no'],'bitrate'=>$bitrate);
+                         $input_channel_bitrate[$channel_data['input'].'_'.$channel_data['rmx_no'].'_'.$channel_data['channelnumber']] = $bitrate;
+                         
+                         $i++;
+                         $j++;
+                         
+						}
+                      
+					}	
+				}
+	       }
+
+	       //**********************OUTPUT CHANNELS*************************//
 		$data['datachannels']=array();
 		$i=0;
 		$channels= $this->model_common_dashboardchannels->getoutputChannelwithFrequency();
 
-		foreach($channels as $channel){ 
-			$url_set_demod = "http://".RMX_IP."/getPrograminfo";      
-		 	$hdr = array('Content-Type: application/x-www-form-urlencoded');
-		 	$data_set_demod="rmx_no=".$channel['rmx_no']."&input=".$channel['inputid']."&output=".$channel['targetid']."&progNumber=".$channel['channelnumber'];
-		 	$restapi_object = new restapi();
-		 	$set_demod_resp =$restapi_object->callAPI("POST",$hdr,$url_set_demod,$data_set_demod);
-		 	$set_demod_decoded = json_decode($set_demod_resp,true);
-			
-		    if($set_demod_resp == false || $set_demod_decoded['error'] == true){
-		    	
-				$this->response->setOutput(-1);
-			}else{
-				// $this->response->setOutput($set_demod_resp);
-				$data['datachannels'][$i]=array('channelnumber'=>$channel['channelnumber'],'output_channelname'=>$channel['output_channelname'],'Qam_Freq'=>$channel['Qam_Freq'],'rmx_no'=>$channel['rmx_no'],'inputid'=>$channel['inputid'],'targetid'=>$channel['targetid'],'changed_ch_number'=>$channel['changed_ch_number'],'changed_ch_name'=>$channel['changed_ch_name'],'bitrate'=>$set_demod_decoded['Band'][1]);
+		foreach($channels as $channel)
+		{ 
+				
+				$out_bitrate =  (isset($input_channel_bitrate[$channel['inputid'].'_'.$channel['rmx_no'].'_'.$channel['channelnumber']]))? $input_channel_bitrate[$channel['inputid'].'_'.$channel['rmx_no'].'_'.$channel['channelnumber']] : 0;
+					
+				$data['datachannels'][$i]=array('channelnumber'=>$channel['channelnumber'],'output_channelname'=>$channel['output_channelname'],'Qam_Freq'=>$channel['Qam_Freq'],'rmx_no'=>$channel['rmx_no'],'inputid'=>$channel['inputid'],'targetid'=>$channel['targetid'],'changed_ch_number'=>$channel['changed_ch_number'],'changed_ch_name'=>$channel['changed_ch_name'],'bitrate'=>$out_bitrate );
 				$i++;
 				
-			}
-
 		}
+
+		 
+          
 		$data['token'] = $this->session->data['token'];
 		$data['header'] = $this->load->controller('common/header');
 		$data['column_left'] = $this->load->controller('common/column_left');
-		$data['order'] = $this->load->controller('dashboard/order');
-		$data['sale'] = $this->load->controller('dashboard/sale');
-		$data['customer'] = $this->load->controller('dashboard/customer');
-		$data['online'] = $this->load->controller('dashboard/online');
-		$data['map'] = $this->load->controller('dashboard/map');
-		$data['chart'] = $this->load->controller('dashboard/chart');
-		$data['activity'] = $this->load->controller('dashboard/activity');
-		$data['recent'] = $this->load->controller('dashboard/recent');
+		
 		$data['footer'] = $this->load->controller('common/footer');
-		if ($this->config->get('config_currency_auto')) 
-		{
-			$this->load->model('localisation/currency');
-			$this->model_localisation_currency->refresh();
-		}
+	
 
 		if (!isset($this->request->get['token']) || !isset($this->session->data['token']) || ($this->request->get['token'] != $this->session->data['token'])) {
 			$data['logged'] = '';
@@ -107,87 +158,7 @@ class ControllerCommonOutput extends Controller {
 			$data['mxl'] = $this->url->link('common/mxl', 'token=' . $this->session->data['token'], 'SSL');
 			$data['ipout'] = $this->url->link('common/ipout', 'token=' . $this->session->data['token'], 'SSL');
 			$data['channelout'] = $this->url->link('common/channelout', 'token=' . $this->session->data['token'], 'SSL');
-			// Orders
-			$this->load->model('sale/order');
-
-			// Processing Orders
-			$data['processing_status_total'] = $this->model_sale_order->getTotalOrders(array('filter_order_status' => implode(',', $this->config->get('config_processing_status'))));
 			
-			$data['processing_status'] = $this->url->link('sale/order', 'token=' . $this->session->data['token'] . '&filter_order_status=' . implode(',', $this->config->get('config_processing_status')), 'SSL');
-
-			// Complete Orders
-			$data['complete_status_total'] = $this->model_sale_order->getTotalOrders(array('filter_order_status' => implode(',', $this->config->get('config_complete_status'))));
-			$data['complete_status'] = $this->url->link('sale/order', 'token=' . $this->session->data['token'] . '&filter_order_status=' . implode(',', $this->config->get('config_complete_status')), 'SSL');
-
-			// Returns
-			$this->load->model('sale/return');
-
-			$return_total = $this->model_sale_return->getTotalReturns(array('filter_return_status_id' => $this->config->get('config_return_status_id')));
-
-			$data['return_total'] = $return_total;
-
-			$data['return'] = $this->url->link('sale/return', 'token=' . $this->session->data['token'], 'SSL');
-
-			// Customers
-			$this->load->model('report/customer');
-
-			$data['online_total'] = $this->model_report_customer->getTotalCustomersOnline();
-
-			$data['online'] = $this->url->link('report/customer_online', 'token=' . $this->session->data['token'], 'SSL');
-
-			$this->load->model('customer/customer');
-
-			$customer_total = $this->model_customer_customer->getTotalCustomers(array('filter_approved' => false));
-
-			$data['customer_total'] = $customer_total;
-			$data['customer_approval'] = $this->url->link('customer/customer', 'token=' . $this->session->data['token'] . '&filter_approved=0', 'SSL');
-
-			// Products
-			$this->load->model('catalog/product');
-
-			$product_total = $this->model_catalog_product->getTotalProducts(array('filter_quantity' => 0));
-
-			$data['product_total'] = $product_total;
-
-			$data['product'] = $this->url->link('catalog/product', 'token=' . $this->session->data['token'] . '&filter_quantity=0', 'SSL');
-
-			// Reviews
-			$this->load->model('catalog/review');
-
-			$review_total = $this->model_catalog_review->getTotalReviews(array('filter_status' => false));
-
-			$data['review_total'] = $review_total;
-
-			$data['review'] = $this->url->link('catalog/review', 'token=' . $this->session->data['token'] . '&filter_status=0', 'SSL');
-
-			// Affliate
-			$this->load->model('marketing/affiliate');
-
-			$affiliate_total = $this->model_marketing_affiliate->getTotalAffiliates(array('filter_approved' => false));
-
-			$data['affiliate_total'] = $affiliate_total;
-			$data['affiliate_approval'] = $this->url->link('marketing/affiliate', 'token=' . $this->session->data['token'] . '&filter_approved=1', 'SSL');
-
-			$data['alerts'] = $customer_total + $product_total + $review_total + $return_total + $affiliate_total;
-
-			// Online Stores
-			$data['stores'] = array();
-
-			$data['stores'][] = array(
-				'name' => $this->config->get('config_name'),
-				'href' => HTTP_CATALOG
-			);
-
-			$this->load->model('setting/store');
-
-			$results = $this->model_setting_store->getStores();
-
-			foreach ($results as $result) {
-				$data['stores'][] = array(
-					'name' => $result['name'],
-					'href' => $result['url']
-				);
-			}
 		}
 		$this->response->setOutput($this->load->view('common/output.tpl', $data));
 	}

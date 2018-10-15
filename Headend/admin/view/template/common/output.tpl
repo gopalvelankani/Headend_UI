@@ -40,13 +40,15 @@
 	
 <body>	
 	
-	<div class="container">
+	<div class="container" style="margin-top: 3%">
 
 	  <ul class="nav nav-tabs">
 
 	    <li class="active"><a data-toggle="tab" href="#section1" >MXLOUT</a></li>
-	    <li><a data-toggle="tab" href="#section2" >IPOUT</a></li>
-	    <li><a data-toggle="tab" href="#section3" >CHANNELS</a></li>
+	    <li><a data-toggle="tab" href="#section2" >IP OUT</a></li>
+        <li><a data-toggle="tab" href="#section5" >IP IN</a></li>
+	    <li><a data-toggle="tab" href="#section3" >OUTPUT CHANNELS</a></li>
+        <li><a data-toggle="tab" href="#section4" >INPUT CHANNELS</a></li>
 	    
 
 	  </ul>
@@ -68,6 +70,16 @@
 		    		
 		    	</div>
 		    </div>
+            <div id="section4" class="tab-pane fade">
+                <div id="input_channel">
+                    
+                </div>
+            </div>
+            <div id="section5" class="tab-pane fade">
+                <div id="IP_INPUT">
+                    
+                </div>
+            </div>
 		</div>
 
 	</div>
@@ -77,7 +89,9 @@
 	var mxls = <?php echo json_encode($mxldata); ?>;
 	var ips = <?php echo json_encode($ipoutdata); ?>;
 	var channels = <?php echo json_encode($datachannels); ?>;
-	call(mxls,ips,channels);
+    var input_channels = <?php echo json_encode($inputChannels_data); ?>;
+    var ip_input = <?php echo json_encode($ipindata); ?>;
+	call(mxls,ips,channels,input_channels,ip_input);
 	function htmlbodyHeightUpdate(){
     var height3 = $( window ).height()
     var height1 = $('.nav').height()+50
@@ -104,7 +118,7 @@
     });
     });
 
-    function call(mxls,ips,channels){
+    function call(mxls,ips,channels,input_channels,ip_input){
     /*************************mxl output**********************************/
 
     var bitrates=[];
@@ -125,7 +139,7 @@
      html+="<th>RATE</th>";
      html+="<th>DEMOD ID</th>";
      html+="<th>STATUS</th>";
-     html+="<th>SIGNAL STRENGTH</th>";
+     html+="<th>SIGNAL STRENGTH(DB)</th>";
      html+="</thead>";
      html+="<tbody>";
 
@@ -138,13 +152,13 @@
         html+="<td>"+mxl['frequency']+"</td>";
         html+="<td>"+mxl['rate']+"</td>";
         html+="<td>"+mxl['demodId']+"</td>";
-        
+        var signalstrength=mxl['signalstrength']/100;
         if(mxl['locked']==0){
             html+="<td><button type='button' class='channel btn btn-danger' data-toggle='modal' data-target='#tunerModal'></button></td>";
-            html+="<td>0.00</td>";
+            html+="<td>"+signalstrength+"</td>";
         }else{
             html+="<td><button type='button' class='channel btn btn-success' data-toggle='modal' data-target='#tunerModal'></button></td>";
-            html+="<td>"+mxl['signalstrength']+".00</td>";
+            html+="<td>"+signalstrength+"</td>";
         }
         
         html+="</tr>";
@@ -154,13 +168,12 @@
     html+="</table>";
     document.getElementById("mxl").innerHTML = html;
     $('#mymxl').dataTable();
-    /******************iptable*******************/
+    /******************ipOUTPUT*******************/
 
 
     var bitrates=[];
     var count=0;
     var parse=false;
-    // 'ip_address'=>$ip['ip_address'],'port'=>$ip['port'],'payload_interface'=>$ip['payload_interface']);
     ips.forEach(function(ip) {
         console.log(ip['ip_address'],ip['port'],ip['payload_interface'])
 
@@ -172,8 +185,6 @@
      html+="<th>IP ADDRESS</th>";
      html+="<th>PORT</th>";
      html+="<th>PAYLOAD INTERFACE</th>";
-     html+="<th>STATUS</th>";
-     html+="<th>RATE</th>";
      html+="</thead>";
      html+="<tbody>";
 
@@ -184,14 +195,7 @@
         html+="<td>"+ip['port']+"</td>";
         html+="<td>"+ip['payload_interface']+"</td>";
         
-        if(ip['signalstrength']==0){
-            html+="<td><button type='button' class='channel btn btn-danger' data-toggle='modal' data-target='#tunerModal'></button></td>";
-            html+="<td>0.00</td>";
-        }else{
-            html+="<td><button type='button' class='channel btn btn-success' data-toggle='modal' data-target='#tunerModal'></button></td>";
-            html+="<td>"+ip['signalstrength']+".00</td>";
-        }
-        
+       
         html+="</tr>";
 
     });
@@ -199,8 +203,47 @@
     html+="</table>";
     document.getElementById("ip").innerHTML = html;
     $('#myip').dataTable();
+/******************ipOUTPUT*******************/
 
-    /***********************channel*******************/
+/******************ipINPUT*******************/
+ var bitrates=[];
+    var count=0;
+    var parse=false;
+    ip_input.forEach(function(ip) {
+        console.log(ip['ip_address'],ip['port'],ip['channel'],ip['rmx_no'])
+
+    });
+
+     var html = "<table border='1|1' class='table' id='IP_IN'>"; 
+
+     html+="<thead>";
+     html+="<th>IP ADDRESS</th>";
+     html+="<th>PORT</th>";
+     html+="<th>CHANNEL</th>";
+     html+="<th>RMX NO</th>";
+     html+="</thead>";
+     html+="<tbody>";
+
+     
+    ip_input.forEach(function(ip) {
+        html+="<tr class='active'>";
+        html+="<td>"+ip['ip_address']+"</td>";
+        html+="<td>"+ip['port']+"</td>";
+        html+="<td>"+ip['channel']+"</td>";
+        html+="<td>"+ip['rmx_no']+"</td>";
+        
+       
+        html+="</tr>";
+
+    });
+    html+="</tbody>";
+    html+="</table>";
+    document.getElementById("IP_INPUT").innerHTML = html;
+    $('#IP_IN').dataTable();
+
+
+/******************ipINPUT*******************/
+    /***********************output channel*******************/
 
 
     var bitrates=[];
@@ -214,13 +257,13 @@
 
      var html = "<table border='1|1' class='table' id='mychannel' >";   
      html+="<thead>";
-     // html+="<tr>";
+      html+="<tr>";
      html+="<th>CHANNEL NUMBER</th>";
      html+="<th>CHANNEL NAME</th>";
      html+="<th>FREQUENCY</th>";
      html+="<th>STATUS</th>";
-     html+="<th>BITRATE</th>";
-     // html+="</tr>";
+     html+="<th>BITRATE(Mbps)</th>";
+      html+="</tr>";
      html+="</thead>";
      html+="<tbody>";
      
@@ -229,13 +272,13 @@
         html+="<td>"+eachChannel['channelnumber']+"</td>";
         html+="<td>"+eachChannel['output_channelname']+"</td>";
         html+="<td>"+eachChannel['Qam_Freq']+"</td>";
-        
-        if(eachChannel['bitrate']==null){
+        var bitrate=(eachChannel['bitrate']/1000000).toFixed(3);
+        if(eachChannel['bitrate']==0){
             html+="<td><button type='button' class='channel btn btn-danger' data-toggle='modal' data-target='#tunerModal'></button></td>";
-            html+="<td>0.00</td>";
+            html+="<td>0</td>";
         }else{
             html+="<td><button type='button' class='channel btn btn-success' data-toggle='modal' data-target='#tunerModal'></button></td>";
-            html+="<td>"+eachChannel['bitrate']+".00</td>";
+            html+="<td>"+bitrate+"</td>";
         }
         
         html+="</tr>";
@@ -245,6 +288,72 @@
     html+="</table>";
     document.getElementById("channel").innerHTML = html;
     $('#mychannel').dataTable();
+    /***********************output channel*******************/
+//*******************************************input channels*********************************
+ var html = "<table border='1|1' class='table' id='inputchannel' >";   
+     html+="<thead>";
+     // html+="<tr>";
+     html+="<th>CHANNEL NUMBER</th>";
+     html+="<th>CHANNEL NAME</th>";
+     html+="<th>INPUT</th>";
+     html+="<th>RMX NO</th>";
+     html+="<th>STATUS</th>"
+     html+="<th>BITRATE(Mbps)</th>";
+     // html+="</tr>";
+     html+="</thead>";
+     html+="<tbody>";
+     
+    input_channels.forEach(function(eachChannel) {
+        html+="<tr class='active'>";
+        html+="<td>"+eachChannel['channelnumber']+"</td>";
+        html+="<td>"+eachChannel['channelname']+"</td>";
+        html+="<td>"+eachChannel['input']+"</td>";
+        html+="<td>"+eachChannel['rmx_no']+"</td>";
+        
+        var bitrate=(eachChannel['bitrate']/1000000).toFixed(3);
+        
+        if(eachChannel['bitrate']==0){
+            html+="<td><button type='button' class='channel btn btn-danger' data-toggle='modal' data-target='#tunerModal'></button></td>";
+            html+="<td>0</td>";
+        }else{
+            html+="<td><button type='button' class='channel btn btn-success' data-toggle='modal' data-target='#tunerModal'></button></td>";
+            html+="<td>"+bitrate+"</td>";
+        }
+        
+        html+="</tr>";
+
+    });
+    html+="</tbody>";
+    html+="</table>";
+    document.getElementById("input_channel").innerHTML = html;
+    $('#inputchannel').dataTable();
+
+//*******************************input channels*************************************
+}
+function changePass()
+{
+ password = $("#pass").val();
+ repeat_password = $("#pass_repeat").val();
+ var id=1;
+      var res = confirm("Want to update password?");
+      if(res)
+      {
+        
+        $.ajax({
+            url: 'index.php?route=user/user/update_password&token=<?php echo $token; ?>&password='+password+'&id='+id,
+            error:function()                                                                   
+            {
+              
+               alert("Error While Updating Password");
+            },
+            success: function(data) 
+                {
+                  
+                   alert("Password Updated Succesfully");
+                },
+            type: 'POST'
+        });
+      }
 }
 	</script>
 

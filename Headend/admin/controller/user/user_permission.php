@@ -170,7 +170,7 @@ class ControllerUserUserPermission extends Controller {
 		$user_group_total = $this->model_user_user_group->getTotalUserGroups();
 
 		$results = $this->model_user_user_group->getUserGroups($filter_data);
-
+		// var_dump($results);exit();
 		foreach ($results as $result) {
 			$data['user_groups'][] = array(
 				'user_group_id' => $result['user_group_id'],
